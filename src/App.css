@@ -9,6 +9,10 @@
   min-height: 300px;
 }
 
+.ql-uploadImage {
+  background: #000;
+}
 .ql-uploadImage::before {
-  content: "U";
+  content: "P";
+  color: #000;
 }

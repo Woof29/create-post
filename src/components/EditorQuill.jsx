@@ -54,7 +54,7 @@ const EditorQuill = forwardRef(
               reader.onloadend = async () => {
                 try {
                   // 上傳圖片的 API Demo
-                  const storageRef = ref(imgDB, file.name);
+                  const storageRef = ref(imgDB, `portfolio/${file.name}`);
                   const res = await uploadBytes(storageRef, file);
 
                   // imageUrl 是上傳後取得的圖片網址
