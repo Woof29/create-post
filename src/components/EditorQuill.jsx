@@ -8,11 +8,17 @@ import React, {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { imgDB } from "../utils/firebaseInit";
 import Quill from "quill";
+import ImageResize from "quill-image-resize-module-react";
+import styled from "styled-components";
+Quill.register("modules/imageResize", ImageResize);
+
+const QlEditor = styled.div`
+  margin: auto;
+`;
 
 const EditorQuill = forwardRef(
-  ({ readOnly, defaultValue, onTextChange, onSelectionChange }, quillRef) => {
+  ({ readOnly, initialContent, onTextChange, onSelectionChange }, quillRef) => {
     const containerRef = useRef(null);
-    const defaultValueRef = useRef(defaultValue);
     const onTextChangeRef = useRef(onTextChange);
     const onSelectionChangeRef = useRef(onSelectionChange);
 
@@ -30,19 +36,25 @@ const EditorQuill = forwardRef(
       const editorContainer = container.appendChild(
         container.ownerDocument.createElement("div")
       );
+
       const toolbarOptions = {
         container: [
+          ["bold", "italic", "underline", "strike", { align: [] }],
           [{ header: [1, 2, 3] }],
           [{ size: ["small", false, "large", "huge"] }],
-          ["bold", "italic", "underline", "strike", { align: [] }],
-          [{ list: "ordered" }, { list: "bullet" }],
+          [
+            { list: "ordered" },
+            { list: "bullet" },
+            { indent: "-1" },
+            { indent: "+1" },
+          ],
           [{ color: [] }, { background: [] }],
           // 新增了一個 uploadImage 的功能
-          ["link", { uploadImage: true }, "video"],
+          ["link", { image: true }, "video"],
           ["clean"],
         ],
         handlers: {
-          uploadImage: function () {
+          image: function () {
             let fileInput = document.createElement("input");
             fileInput.setAttribute("type", "file");
             fileInput.setAttribute("accept", "image/*");
@@ -86,17 +98,31 @@ const EditorQuill = forwardRef(
         placeholder: "請輸入內容...",
         modules: {
           toolbar: toolbarOptions,
+          imageResize: {
+            parchment: Quill.import("parchment"),
+            modules: ["Resize", "DisplaySize", "Toolbar"],
+            handleStyles: {
+              backgroundColor: "black",
+              border: "none",
+              color: "#fff",
+            },
+            displayStyles: {
+              backgroundColor: "black",
+              border: "none",
+              color: "#fff",
+            },
+          },
         },
       });
 
       quillRef.current = quill;
 
-      if (defaultValueRef.current) {
-        quill.setContents(defaultValueRef.current);
+      if (initialContent) {
+        quill.root.innerHTML = initialContent;
       }
 
       quill.on(Quill.events.TEXT_CHANGE, (delta, oldDelta, source) => {
-        onTextChangeRef.current?.(quill.getContents(), delta, source, quill);
+        onTextChangeRef.current?.(quill.root.innerHTML, delta, source, quill);
       });
 
       quill.on(Quill.events.SELECTION_CHANGE, (...args) => {
@@ -109,10 +135,10 @@ const EditorQuill = forwardRef(
       };
     }, [quillRef]);
 
-    return <div ref={containerRef}></div>;
+    return <QlEditor ref={containerRef}></QlEditor>;
   }
 );
 
-EditorQuill.displayName = "EditorQuill";
+// EditorQuill.displayName = "EditorQuill";
 
 export default EditorQuill;
