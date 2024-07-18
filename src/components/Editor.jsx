@@ -1,14 +1,14 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useRef, useEffect } from "react";
-import EditorQuill from "./EditorQuill";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "../utils/firebaseInit";
-import { imgDB } from "../utils/firebaseInit";
-import styled from "styled-components";
-import TextInput from "./TextInput";
-import "quill/dist/quill.core.css";
-import "quill/dist/quill.snow.css";
+import React, { useState, useRef, useEffect } from 'react';
+import EditorQuill from './EditorQuill';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../utils/firebaseInit';
+import { imgDB } from '../utils/firebaseInit';
+import styled from 'styled-components';
+import TextInput from './TextInput';
+import 'quill/dist/quill.core.css';
+import 'quill/dist/quill.snow.css';
 
 const Container = styled.div`
   width: 100%;
@@ -48,7 +48,7 @@ const UploadCover = styled.div`
     position: relative;
     &::after,
     ::before {
-      content: "";
+      content: '';
       width: calc(100% - 40px);
       height: 2px;
       background: #fff;
@@ -58,7 +58,7 @@ const UploadCover = styled.div`
       transform: translate(-50%, -50%);
     }
     &::before {
-      content: "";
+      content: '';
       width: calc(100% - 40px);
       height: 2px;
       background: #fff;
@@ -162,31 +162,34 @@ const Toolbar = styled.div`
 
 export const MyEditor = () => {
   const quillRef = useRef();
+  const inputFile = useRef(null);
   const [content, setContent] = useState(() => {
-    return localStorage.getItem("draftContent") || "";
+    return localStorage.getItem('draftContent') || '';
   });
   const [coverUrl, setCoverUrl] = useState(() => {
-    return localStorage.getItem("coverUrl") || "";
+    return localStorage.getItem('coverUrl') || '';
   });
   const [type, setType] = useState(() => {
-    return localStorage.getItem("type") || "";
+    return localStorage.getItem('type') || '';
   });
   const [topic, setTopic] = useState(() => {
-    return localStorage.getItem("topic") || "";
+    return localStorage.getItem('topic') || '';
   });
   const [title, setTitle] = useState(() => {
-    return localStorage.getItem("title") || "";
+    return localStorage.getItem('title') || '';
   });
   const [link, setLink] = useState(() => {
-    return localStorage.getItem("link") || "";
+    return localStorage.getItem('link') || '';
   });
   const [preview, setPreview] = useState(() => {
-    return localStorage.getItem("preview") || "";
+    return localStorage.getItem('preview') || '';
   });
 
   const handleUploadCover = (e) => {
     if (type) {
       const file = e.target.files[0];
+      console.log(inputFile.current.value);
+      console.log(file);
       const reader = new FileReader();
       reader.onloadend = async () => {
         try {
@@ -198,13 +201,13 @@ export const MyEditor = () => {
           const imageUrl = await getDownloadURL(res.ref);
           setCoverUrl(imageUrl);
         } catch (error) {
-          console.error("Response error:", error);
+          console.error('Response error:', error);
         }
       };
       reader.readAsArrayBuffer(file);
     } else {
-      alert("plz enter type before upload cover!");
-      console.log(type);
+      alert('plz enter type before upload cover!');
+      inputFile.current.value = '';
       return;
     }
   };
@@ -215,13 +218,14 @@ export const MyEditor = () => {
 
   const handleSaveDraft = () => {
     // 將當前內容保存到 localStorage
-    localStorage.setItem("coverUrl", coverUrl);
-    localStorage.setItem("draftContent", content);
-    localStorage.setItem("type", type);
-    localStorage.setItem("topic", topic);
-    localStorage.setItem("title", title);
-    localStorage.setItem("link", link);
-    alert("草稿已保存！");
+    localStorage.setItem('coverUrl', coverUrl);
+    localStorage.setItem('draftContent', content);
+    localStorage.setItem('type', type);
+    localStorage.setItem('topic', topic);
+    localStorage.setItem('title', title);
+    localStorage.setItem('link', link);
+    localStorage.setItem('preview', preview);
+    alert('草稿已保存！');
   };
 
   const handlePublish = async () => {
@@ -235,22 +239,38 @@ export const MyEditor = () => {
         preview: preview,
         createdAt: new Date(),
       });
-      console.log("Document written with ID: ", docRef.id);
-      alert("文件已成功上傳！");
+      console.log('Document written with ID: ', docRef.id);
+      alert('文件已成功上傳！');
+      reset();
     } catch (error) {
-      console.error("Error adding document: ", error);
-      alert("上傳文件時發生錯誤：" + error.message);
+      console.error('Error adding document: ', error);
+      alert('上傳文件時發生錯誤：' + error.message);
     }
   };
-  useEffect(() => {
-    console.log(preview);
-  }, [preview]);
+
+  const reset = () => {
+    setContent('');
+    setCoverUrl('');
+    setType('');
+    setTopic('');
+    setTitle('');
+    setLink('');
+    setPreview('');
+    localStorage.removeItem('coverUrl');
+    localStorage.removeItem('draftContent');
+    localStorage.removeItem('type');
+    localStorage.removeItem('topic');
+    localStorage.removeItem('title');
+    localStorage.removeItem('link');
+    localStorage.removeItem('preview');
+  };
   return (
     <Container>
       <Form>
         <UploadCover>
           <div className="uploadBtn">
             <input
+              ref={inputFile}
               accept="image/*"
               type="file"
               onChange={handleUploadCover}
@@ -265,7 +285,7 @@ export const MyEditor = () => {
           <select
             name="type"
             id="type"
-            defaultValue=""
+            defaultValue={type}
             onChange={(e) => setType(e.target.value)}
           >
             <option value="" disabled>
@@ -281,21 +301,22 @@ export const MyEditor = () => {
           <select
             name="topic"
             id="topic"
-            defaultValue=""
+            defaultValue={topic}
             onChange={(e) => setTopic(e.target.value)}
           >
             <option value="" disabled>
               --請選擇主題--
             </option>
-            <option value="photo">photo</option>
-            {type === "portfolio" && (
+            {type && <option value="photo">photo</option>}
+
+            {type === 'portfolio' && (
               <>
                 <option value="video">video</option>
                 <option value="web">web</option>
                 <option value="graphic">graphic</option>
               </>
             )}
-            {type === "blog" && (
+            {type === 'blog' && (
               <>
                 <option value="tech">tech</option>
                 <option value="travel">travel</option>
