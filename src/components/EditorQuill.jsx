@@ -1,11 +1,11 @@
 /* eslint-disable react/prop-types */
-import { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { imgDB } from "../utils/firebaseInit";
-import Quill from "quill";
-import ImageResize from "quill-image-resize-module-react";
-import styled from "styled-components";
-Quill.register("modules/imageResize", ImageResize);
+import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { imgDB } from '../utils/firebaseInit';
+import Quill from 'quill';
+import ImageResize from 'quill-image-resize-module-react';
+import styled from 'styled-components';
+Quill.register('modules/imageResize', ImageResize);
 
 const QlEditor = styled.div`
   .ql-container {
@@ -30,33 +30,40 @@ const EditorQuill = forwardRef(
     useEffect(() => {
       const container = containerRef.current;
       const editorContainer = container.appendChild(
-        container.ownerDocument.createElement("div")
+        container.ownerDocument.createElement('div')
       );
 
       const toolbarOptions = {
         container: [
-          ["bold", "italic", "underline", "strike", { align: [] }],
-          [{ header: [1, 2, 3] }],
-          [{ size: ["small", false, "large", "huge"] }],
           [
-            { list: "ordered" },
-            { list: "bullet" },
-            { indent: "-1" },
-            { indent: "+1" },
+            'bold',
+            'italic',
+            'underline',
+            'strike',
+            { align: [] },
+            'blockquote',
+          ],
+          [{ header: [1, 2, 3] }],
+          [{ size: ['small', false, 'large', 'huge'] }],
+          [
+            { list: 'ordered' },
+            { list: 'bullet' },
+            { indent: '-1' },
+            { indent: '+1' },
           ],
           [{ color: [] }, { background: [] }],
           // 新增了一個 uploadImage 的功能
-          ["link", { image: true }, "video"],
-          ["clean"],
+          ['link', { image: true }, 'code-block'],
+          ['clean'],
         ],
         handlers: {
           image: function () {
-            let fileInput = document.createElement("input");
-            fileInput.setAttribute("type", "file");
-            fileInput.setAttribute("accept", "image/*");
+            let fileInput = document.createElement('input');
+            fileInput.setAttribute('type', 'file');
+            fileInput.setAttribute('accept', 'image/*');
             fileInput.click();
 
-            fileInput.addEventListener("change", () => {
+            fileInput.addEventListener('change', () => {
               const file = fileInput.files[0];
               const reader = new FileReader();
               reader.onloadend = async () => {
@@ -69,18 +76,18 @@ const EditorQuill = forwardRef(
                   const imageUrl = await getDownloadURL(res.ref);
 
                   let range = this.quill.getSelection();
-                  quill.insertEmbed(range.index, "image", imageUrl);
+                  quill.insertEmbed(range.index, 'image', imageUrl);
                   // 取得剛插入的圖片並設置樣式 max-width = 100%
                   setTimeout(() => {
                     let img = this.quill.root.querySelector(
                       `img[src="${imageUrl}"]`
                     );
                     if (img) {
-                      img.style.maxWidth = "100%";
+                      img.style.maxWidth = '100%';
                     }
                   }, 10);
                 } catch (error) {
-                  console.error("Response error:", error);
+                  console.error('Response error:', error);
                 }
               };
               reader.readAsArrayBuffer(file);
@@ -90,13 +97,13 @@ const EditorQuill = forwardRef(
       };
 
       const quill = new Quill(editorContainer, {
-        theme: "snow",
-        placeholder: "請輸入內容...",
+        theme: 'snow',
+        placeholder: '請輸入內容...',
         modules: {
           toolbar: toolbarOptions,
           imageResize: {
-            parchment: Quill.import("parchment"),
-            modules: ["Resize", "DisplaySize", "Toolbar"],
+            parchment: Quill.import('parchment'),
+            modules: ['Resize', 'DisplaySize', 'Toolbar'],
           },
         },
       });
@@ -117,7 +124,7 @@ const EditorQuill = forwardRef(
 
       return () => {
         quillRef.current = null;
-        container.innerHTML = "";
+        container.innerHTML = '';
       };
     }, [quillRef, type]);
 
@@ -129,6 +136,6 @@ const EditorQuill = forwardRef(
   }
 );
 
-EditorQuill.displayName = "EditorQuill";
+EditorQuill.displayName = 'EditorQuill';
 
 export default EditorQuill;
